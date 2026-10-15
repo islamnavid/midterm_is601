@@ -1,7 +1,9 @@
 
-"""Interactive calculator REPL."""
+"""Interactive calculator REPL with color-coded output."""
 
 import math
+
+from colorama import Fore, Style, init
 
 from app.calculator import Calculator
 from app.observers import LoggingObserver, AutoSaveObserver
@@ -16,6 +18,10 @@ OPERATIONS = {
 
 def main():
     """Run the interactive calculator."""
+
+    # Initialize Colorama for colored terminal output.
+    init(autoreset=True)
+
     calculator = Calculator()
     config = calculator.config
     history = calculator.history
@@ -30,7 +36,7 @@ def main():
         LoggingObserver(config.log_file)
     )
 
-    # Register auto-save observer if enabled.
+    # Register auto-save observer when enabled.
     if config.auto_save:
         calculator.add_observer(
             AutoSaveObserver(
@@ -40,11 +46,11 @@ def main():
         )
 
     def auto_save_history():
-        """Save current history when auto-save is enabled."""
+        """Save history when automatic saving is enabled."""
         if config.auto_save:
             history.save_to_csv(config.history_file)
 
-    print("Welcome to the Calculator!")
+    print(Fore.CYAN + "Welcome to the Calculator!")
     print("Type 'help' for available commands.")
 
     while True:
@@ -52,11 +58,11 @@ def main():
             command = input("calculator> ").strip().lower()
 
             if command == "exit":
-                print("Goodbye!")
+                print(Fore.CYAN + "Goodbye!")
                 break
 
             elif command == "help":
-                print("Available commands:")
+                print(Fore.CYAN + "Available commands:")
                 print("  add 10 5 - Addition")
                 print("  subtract 10 5 - Subtraction")
                 print("  multiply 10 5 - Multiplication")
@@ -80,8 +86,10 @@ def main():
                 calculations = history.get_all()
 
                 if not calculations:
-                    print("No calculations in history.")
+                    print(Fore.YELLOW + "No calculations in history.")
                 else:
+                    print(Fore.CYAN + "Calculation History:")
+
                     for calculation in calculations:
                         print(
                             f"{calculation.operation}: "
@@ -93,48 +101,57 @@ def main():
             elif command == "undo":
                 if history.undo():
                     auto_save_history()
-                    print("Undo successful.")
+                    print(Fore.GREEN + "Undo successful.")
                 else:
-                    print("Nothing to undo.")
+                    print(Fore.YELLOW + "Nothing to undo.")
 
             elif command == "redo":
                 if history.redo():
                     auto_save_history()
-                    print("Redo successful.")
+                    print(Fore.GREEN + "Redo successful.")
                 else:
-                    print("Nothing to redo.")
+                    print(Fore.YELLOW + "Nothing to redo.")
 
             elif command == "clear":
-                # Checkpoint is handled here, not in clear().
+                # Save a checkpoint before clearing history.
                 history.checkpoint()
                 history.clear()
+
                 auto_save_history()
-                print("History cleared.")
+
+                print(Fore.GREEN + "History cleared.")
 
             elif command == "save":
                 try:
                     history.save_to_csv(manual_history_file)
+
                     print(
-                        f"History saved to {manual_history_file}"
+                        Fore.GREEN
+                        + f"History saved to {manual_history_file}"
                     )
+
                 except (OSError, ValueError) as error:
-                    print(f"Error saving history: {error}")
+                    print(
+                        Fore.RED
+                        + f"Error saving history: {error}"
+                    )
 
             elif command == "load":
                 try:
-                    # Save state before replacing history.
+                    # Remember the current history before loading.
                     previous_state = history.save_state()
 
                     history.load_from_csv(manual_history_file)
 
-                    # Allow undo to restore the previous history.
+                    # Make loading reversible with undo.
                     history._undo_stack.append(previous_state)
                     history._redo_stack.clear()
 
                     auto_save_history()
 
                     print(
-                        f"History loaded from {manual_history_file}"
+                        Fore.GREEN
+                        + f"History loaded from {manual_history_file}"
                     )
 
                 except (
@@ -143,7 +160,10 @@ def main():
                     ValueError,
                     KeyError,
                 ) as error:
-                    print(f"Error loading history: {error}")
+                    print(
+                        Fore.RED
+                        + f"Error loading history: {error}"
+                    )
 
             elif command == "":
                 continue
@@ -153,13 +173,17 @@ def main():
 
                 if parts[0] in OPERATIONS:
                     if len(parts) != 3:
-                        print("Usage: operation number1 number2")
+                        print(
+                            Fore.YELLOW
+                            + "Usage: operation number1 number2"
+                        )
                         continue
 
                     try:
                         operand1 = float(parts[1])
                         operand2 = float(parts[2])
 
+                        # Reject NaN and infinity.
                         if not (
                             math.isfinite(operand1)
                             and math.isfinite(operand2)
@@ -168,6 +192,7 @@ def main():
                                 "Inputs must be finite numbers."
                             )
 
+                        # Enforce maximum input value.
                         if (
                             abs(operand1) > config.max_input_value
                             or abs(operand2) > config.max_input_value
@@ -182,27 +207,31 @@ def main():
                             operand2
                         )
 
-                        print(f"Result: {result}")
+                        print(
+                            Fore.GREEN
+                            + f"Result: {result}"
+                        )
 
                     except (
                         ValueError,
                         ZeroDivisionError,
                         OverflowError,
                     ) as error:
-                        print(f"Error: {error}")
+                        print(Fore.RED + f"Error: {error}")
 
                 else:
                     print(
-                        "Unknown command. "
-                        "Type 'help' for assistance."
+                        Fore.RED
+                        + "Unknown command. "
+                        + "Type 'help' for assistance."
                     )
 
         except (KeyboardInterrupt, EOFError):
-            print("\nGoodbye!")
+            print(Fore.CYAN + "\nGoodbye!")
             break
 
         except (OSError, ValueError) as error:
-            print(f"Error: {error}")
+            print(Fore.RED + f"Error: {error}")
 
 
 if __name__ == "__main__":

@@ -1,7 +1,10 @@
 
 """Manage calculator history."""
+
 from pathlib import Path
+
 import pandas as pd
+
 from app.calculation import Calculation
 from app.calculator_memento import CalculatorMemento
 
@@ -9,19 +12,23 @@ from app.calculator_memento import CalculatorMemento
 class CalculationHistory:
     """Store and manage completed calculations."""
 
-    
-    def __init__(self):
+    def __init__(self, max_history_size=100):
+        if max_history_size <= 0:
+            raise ValueError(
+                "Maximum history size must be positive."
+            )
+
+        self.max_history_size = max_history_size
         self._history = []
         self._undo_stack = []
         self._redo_stack = []
 
-
     def save_state(self) -> CalculatorMemento:
-        """Create a snapshot of the current calculation history."""
+        """Create a snapshot of the current history."""
         return CalculatorMemento(self._history)
 
     def restore_state(self, memento: CalculatorMemento):
-        """Restore calculation history from a saved snapshot."""
+        """Restore history from a saved snapshot."""
         self._history = memento.get_state()
 
     def checkpoint(self):
@@ -47,10 +54,12 @@ class CalculationHistory:
         self.restore_state(self._redo_stack.pop())
         return True
 
-
     def add(self, calculation: Calculation):
-        """Add a calculation to history."""
+        """Add a calculation and enforce history size."""
         self._history.append(calculation)
+
+        if len(self._history) > self.max_history_size:
+            self._history.pop(0)
 
     def get_all(self):
         """Return all stored calculations."""
@@ -60,10 +69,11 @@ class CalculationHistory:
         """Return the most recent calculation."""
         if not self._history:
             return None
+
         return self._history[-1]
 
     def clear(self):
-        """Remove all calculations while supporting undo."""
+        """Clear history while preserving undo support."""
         self.checkpoint()
         self._history.clear()
 
@@ -89,11 +99,15 @@ class CalculationHistory:
             for calculation in self._history
         ]
 
-        dataframe = pd.DataFrame(records, columns=columns)
+        dataframe = pd.DataFrame(
+            records,
+            columns=columns
+        )
+
         dataframe.to_csv(path, index=False)
 
     def load_from_csv(self, file_path):
-        """Load calculation history from a CSV file."""
+        """Load history from CSV with undo support."""
         path = Path(file_path)
 
         if not path.exists():
@@ -102,6 +116,7 @@ class CalculationHistory:
             )
 
         dataframe = pd.read_csv(path)
+
         required_columns = {
             "operation",
             "operand1",
@@ -111,7 +126,9 @@ class CalculationHistory:
         }
 
         if not required_columns.issubset(dataframe.columns):
-            raise ValueError("Invalid history CSV format")
+            raise ValueError(
+                "Invalid history CSV format"
+            )
 
         loaded_calculations = []
 
@@ -121,9 +138,17 @@ class CalculationHistory:
                 operand1=float(row["operand1"]),
                 operand2=float(row["operand2"]),
             )
+
             calculation.timestamp = pd.to_datetime(
                 row["timestamp"]
             ).to_pydatetime()
+
             loaded_calculations.append(calculation)
 
-        self._history = loaded_calculations
+        # Preserve the previous state for undo.
+        self.checkpoint()
+
+        # Keep only the most recent calculations.
+        self._history = loaded_calculations[
+            -self.max_history_size:
+        ]

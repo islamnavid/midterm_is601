@@ -10,8 +10,17 @@ class Calculator:
     """Manage calculations and calculation history."""
 
     def __init__(self):
+        """Initialize calculator with configuration and history."""
+
+        # Load configuration from environment variables.
         self.config = CalculatorConfig()
-        self.history = CalculationHistory()
+
+        # Initialize history with the configured maximum size.
+        self.history = CalculationHistory(
+            max_history_size=self.config.max_history_size
+        )
+
+        # Store registered observers.
         self.observers = []
 
     def add_observer(self, observer):
@@ -26,12 +35,20 @@ class Calculator:
     def calculate(self, operation, operand1, operand2):
         """Perform a calculation and save its result."""
 
-        # Save the current history before changing it
+        # Save the current history before changing it.
         self.history.checkpoint()
 
-        calculation = Calculation(operation, operand1, operand2)
+        # Create and execute the calculation.
+        calculation = Calculation(
+            operation,
+            operand1,
+            operand2
+        )
 
+        # Add calculation to history.
         self.history.add(calculation)
+
+        # Notify registered observers.
         self.notify_observers(calculation)
 
         return calculation.result

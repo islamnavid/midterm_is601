@@ -1,13 +1,16 @@
+
 """Main calculator class."""
 
 from app.calculation import Calculation
 from app.history import CalculationHistory
+from app.calculator_config import CalculatorConfig
 
 
 class Calculator:
     """Manage calculations and calculation history."""
 
     def __init__(self):
+        self.config = CalculatorConfig()
         self.history = CalculationHistory()
         self.observers = []
 

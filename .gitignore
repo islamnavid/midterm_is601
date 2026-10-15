@@ -6,3 +6,4 @@ htmlcov/
 .env
 *.log
 history_test.csv
+calculation_history.csv

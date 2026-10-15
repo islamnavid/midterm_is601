@@ -3,13 +3,50 @@
 from pathlib import Path
 import pandas as pd
 from app.calculation import Calculation
+from app.calculator_memento import CalculatorMemento
 
 
 class CalculationHistory:
     """Store and manage completed calculations."""
 
+    
     def __init__(self):
         self._history = []
+        self._undo_stack = []
+        self._redo_stack = []
+
+
+    def save_state(self) -> CalculatorMemento:
+        """Create a snapshot of the current calculation history."""
+        return CalculatorMemento(self._history)
+
+    def restore_state(self, memento: CalculatorMemento):
+        """Restore calculation history from a saved snapshot."""
+        self._history = memento.get_state()
+
+    def checkpoint(self):
+        """Save the current state for undo."""
+        self._undo_stack.append(self.save_state())
+        self._redo_stack.clear()
+
+    def undo(self):
+        """Restore the previous saved state."""
+        if not self._undo_stack:
+            return False
+
+        self._redo_stack.append(self.save_state())
+        self.restore_state(self._undo_stack.pop())
+        return True
+
+    def redo(self):
+        """Restore a previously undone state."""
+        if not self._redo_stack:
+            return False
+
+        self._undo_stack.append(self.save_state())
+        self.restore_state(self._redo_stack.pop())
+        return True
+
 
     def add(self, calculation: Calculation):
         """Add a calculation to history."""

@@ -21,7 +21,11 @@ class Calculator:
             observer.update(calculation)
 
     def calculate(self, operation, operand1, operand2):
-        """Perform a calculation and store its result."""
+        """Perform a calculation and save its result."""
+
+        # Save the current history before changing it
+        self.history.checkpoint()
+
         calculation = Calculation(operation, operand1, operand2)
 
         self.history.add(calculation)

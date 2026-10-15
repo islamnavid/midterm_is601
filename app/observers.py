@@ -1,38 +1,16 @@
 
 """Observers for calculator events."""
 
-import logging
 from pathlib import Path
-from uuid import uuid4
+
+from app.logger import Logger
 
 
 class LoggingObserver:
     """Log calculator events and completed calculations."""
 
     def __init__(self, log_file="calculator.log"):
-        log_path = Path(log_file)
-        log_path.parent.mkdir(parents=True, exist_ok=True)
-
-        # Create a unique logger for each observer instance.
-        self.logger = logging.getLogger(
-            f"calculator.observer.{uuid4().hex}"
-        )
-
-        self.logger.setLevel(logging.INFO)
-        self.logger.propagate = False
-
-        handler = logging.FileHandler(
-            log_path,
-            encoding="utf-8"
-        )
-
-        handler.setFormatter(
-            logging.Formatter(
-                "%(asctime)s - %(levelname)s - %(message)s"
-            )
-        )
-
-        self.logger.addHandler(handler)
+        self.logger = Logger.create_logger(log_file)
 
     def update(self, calculation):
         """Record a completed calculation."""

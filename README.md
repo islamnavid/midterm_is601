@@ -2,14 +2,16 @@
 
 ## Project Overview
 
-This project is an enhanced Python calculator developed for the IS601 Midterm Project.
+This project is an enhanced Python calculator developed for the **NJIT IS601 Midterm Project**.
 
-The application provides an interactive command-line interface (REPL) for performing arithmetic calculations. It demonstrates object-oriented programming, multiple software design patterns, configurable application behavior, calculation history management, logging, CSV persistence, and automated testing.
+The application provides an interactive command-line interface (REPL) for performing basic and advanced arithmetic calculations. It demonstrates object-oriented programming, software design patterns, environment-based configuration, calculation history management, logging, CSV persistence, error handling, and automated testing.
+
+The project also includes three optional enhancements: the Command Design Pattern, decorator-based dynamic help, and Colorama terminal output.
 
 ## Features
 
-- Basic and advanced arithmetic operations
-- Factory Design Pattern for selecting arithmetic operations
+- Ten basic and advanced arithmetic operations
+- Factory Design Pattern for arithmetic operation selection
 - Memento Design Pattern for undo and redo functionality
 - Observer Design Pattern for logging and automatic CSV saving
 - Command Design Pattern for encapsulating calculator commands
@@ -18,10 +20,10 @@ The application provides an interactive command-line interface (REPL) for perfor
 - Calculation history management using pandas
 - Manual CSV history saving and loading
 - Environment-based configuration using python-dotenv
-- Configurable calculation precision and history size
-- Input validation and error handling
+- Configurable maximum history size and result precision
+- Input validation and exception handling
 - Automated unit testing using pytest
-- Test coverage reporting and enforcement using pytest-cov
+- Code coverage measurement and enforcement using pytest-cov
 - Continuous Integration using GitHub Actions
 
 ## Project Structure
@@ -58,32 +60,34 @@ midterm_is601/
 │   ├── test_observer.py
 │   ├── test_operations.py
 │   └── test_repl.py
-├── .env
+├── .github/
 ├── .gitignore
 ├── requirements.txt
 └── README.md
 ```
 
-The `.env` file contains local configuration settings and is excluded from Git tracking.
+The application creates `logs/` and `history/` directories for generated log files and CSV calculation history.
 
-The application may also generate `history/` and `logs/` directories for CSV files and logging output.
+The local `.env` configuration file is excluded from version control.
 
 ## Installation
 
-Clone the GitHub repository:
+### 1. Clone the Repository
 
 ```bash
 git clone https://github.com/islamnavid/midterm_is601.git
 cd midterm_is601
 ```
 
-Create a virtual environment:
+### 2. Create a Virtual Environment
 
 ```bash
 python3 -m venv venv
 ```
 
-Activate the virtual environment on macOS or Linux:
+Activate the virtual environment.
+
+On macOS or Linux:
 
 ```bash
 source venv/bin/activate
@@ -95,19 +99,25 @@ On Windows:
 venv\Scripts\activate
 ```
 
-Install the required dependencies:
+### 3. Install Dependencies
 
 ```bash
 python -m pip install -r requirements.txt
 ```
 
-The project uses pandas, python-dotenv, pytest, pytest-cov, and colorama.
+The main dependencies include:
+
+- pandas
+- python-dotenv
+- colorama
+- pytest
+- pytest-cov
 
 ## Environment Configuration
 
-Create a `.env` file in the project's root directory.
+The calculator uses environment variables to manage application settings.
 
-Example configuration:
+Create a `.env` file in the project root directory with the following configuration:
 
 ```env
 CALCULATOR_LOG_DIR=logs
@@ -121,44 +131,58 @@ CALCULATOR_LOG_FILE=calculator.log
 CALCULATOR_HISTORY_FILE=calculation_history.csv
 ```
 
-Configuration settings control the history storage location, logging location, maximum history size, automatic saving, numeric precision, input limits, and file encoding.
+### Configuration Settings
 
-The application uses the `CalculatorConfig` class to load and validate environment settings.
+| Setting | Description |
+|---|---|
+| `CALCULATOR_LOG_DIR` | Directory for log files |
+| `CALCULATOR_HISTORY_DIR` | Directory for history files |
+| `CALCULATOR_MAX_HISTORY_SIZE` | Maximum number of stored calculations |
+| `CALCULATOR_AUTO_SAVE` | Enables or disables automatic history saving |
+| `CALCULATOR_PRECISION` | Number of decimal places displayed |
+| `CALCULATOR_MAX_INPUT_VALUE` | Maximum allowed input magnitude |
+| `CALCULATOR_DEFAULT_ENCODING` | Default text encoding setting |
+| `CALCULATOR_LOG_FILE` | Log filename |
+| `CALCULATOR_HISTORY_FILE` | Automatic history CSV filename |
+
+Configuration values are loaded using the `CalculatorConfig` class in `calculator_config.py`.
 
 ## Running the Calculator
 
-Start the interactive calculator using:
+Start the application:
 
 ```bash
 python -m app.repl
 ```
 
-The application displays an interactive prompt:
+The application displays:
 
 ```text
+Welcome to the Calculator!
+Type 'help' for available commands.
 calculator>
 ```
 
-Users can enter arithmetic operations or history-management commands.
+Users can enter arithmetic operations or calculator commands directly into the REPL.
 
 ## Supported Arithmetic Operations
 
-| Operation | Command | Description |
+| Operation | Command | Example |
 |---|---|---|
-| Addition | `add` | Adds two numbers |
-| Subtraction | `subtract` | Subtracts the second number |
-| Multiplication | `multiply` | Multiplies two numbers |
-| Division | `divide` | Divides the first number by the second |
-| Power | `power` | Raises a number to a power |
-| Root | `root` | Calculates a root |
-| Modulus | `modulus` | Returns the remainder |
-| Integer Division | `int_divide` | Performs integer division |
-| Percentage | `percent` | Calculates a percentage |
-| Absolute Difference | `abs_diff` | Calculates the absolute difference |
+| Addition | `add` | `add 10 5` |
+| Subtraction | `subtract` | `subtract 10 5` |
+| Multiplication | `multiply` | `multiply 10 5` |
+| Division | `divide` | `divide 10 5` |
+| Exponentiation | `power` | `power 2 3` |
+| Root | `root` | `root 16 2` |
+| Modulus | `modulus` | `modulus 10 3` |
+| Integer Division | `int_divide` | `int_divide 10 3` |
+| Percentage | `percent` | `percent 20 100` |
+| Absolute Difference | `abs_diff` | `abs_diff 10 5` |
 
 ### Example Calculations
 
-With the default precision of two decimal places:
+With `CALCULATOR_PRECISION=2`:
 
 ```text
 calculator> add 10 5
@@ -167,24 +191,29 @@ Result: 15.00
 calculator> multiply 2.5 3
 Result: 7.50
 
-calculator> subtract 20 8
-Result: 12.00
+calculator> divide 10 3
+Result: 3.33
+
+calculator> power 2 3
+Result: 8.00
 ```
 
-## History Management Commands
+Calculation precision affects displayed results without changing the underlying stored calculation values.
+
+## REPL Commands
 
 | Command | Description |
 |---|---|
-| `history` | Displays previous calculations |
-| `undo` | Restores the previous history state |
-| `redo` | Restores an undone history change |
-| `clear` | Clears calculation history |
-| `save` | Saves a manual CSV history backup |
-| `load` | Loads a previously saved CSV history backup |
-| `help` | Displays registered commands |
-| `exit` | Exits the application |
+| `history` | Display previous calculations |
+| `undo` | Undo the last history change |
+| `redo` | Restore the last undone history change |
+| `clear` | Clear calculation history |
+| `save` | Save a manual history backup |
+| `load` | Load a manual history backup |
+| `help` | Display available commands |
+| `exit` | Exit the application |
 
-### Example Session
+### Example History Management
 
 ```text
 calculator> add 10 5
@@ -219,121 +248,236 @@ Goodbye!
 
 ## Design Patterns
 
-### Factory Design Pattern
+### 1. Factory Design Pattern
 
-The Factory Design Pattern is implemented in `operations.py`.
+**Implementation:** `app/operations.py`
 
-It selects the appropriate arithmetic operation based on the operation name supplied by the user.
+The Factory Design Pattern selects the appropriate arithmetic operation based on the operation name.
 
-This separates operation selection from the calculator's core processing logic.
+This separates operation selection from calculation execution and makes the arithmetic system easier to maintain and extend.
 
-### Memento Design Pattern
+### 2. Memento Design Pattern
 
-The Memento Design Pattern is implemented using `calculator_memento.py` and `history.py`.
+**Implementation:** `app/calculator_memento.py` and `app/history.py`
 
-It allows the calculator to save snapshots of calculation history and restore previous states through undo and redo commands.
+The Memento Design Pattern preserves snapshots of calculation history.
 
-### Observer Design Pattern
+It supports:
 
-The Observer Design Pattern is implemented using `observers.py`.
+- Undoing calculations
+- Redoing previously undone changes
+- Restoring cleared history
+- Undoing history loading operations
 
-Registered observers respond to completed calculations, supporting logging and automatic history persistence.
+### 3. Observer Design Pattern
 
-This keeps those responsibilities separate from the calculator's core arithmetic functionality.
+**Implementation:** `app/observers.py`
 
-### Command Design Pattern
+The Observer Design Pattern separates logging and automatic history persistence from the calculator's arithmetic logic.
 
-The Command Design Pattern is implemented in `commands.py`.
+The application includes:
 
-History management actions, including undo, redo, clear, save, and load, are represented as command objects.
+- `LoggingObserver`: Records completed calculations
+- `AutoSaveObserver`: Automatically saves calculation history to CSV
 
-This separates the command execution logic from the REPL interface.
+Observers are notified after calculations are completed.
 
-### Decorator-Based Command Registration
+### 4. Command Design Pattern
 
-The command registration system is implemented in `command_registry.py`.
+**Implementation:** `app/commands.py`
 
-Decorators register commands along with their descriptions.
+The Command Design Pattern encapsulates calculator actions into separate command classes.
 
-The application uses this registration information to generate help output dynamically, reducing the need to maintain a separate hardcoded help list.
+Each command implements an `execute()` method.
 
-## Color-Coded Terminal Output
+Examples include:
 
-The application uses the Colorama library to improve readability.
+- `HistoryCommand`
+- `UndoCommand`
+- `RedoCommand`
+- `ClearCommand`
+- `SaveCommand`
+- `LoadCommand`
+- `HelpCommand`
+- `ExitCommand`
 
-Different terminal colors distinguish successful operations, calculation history, error messages, and other informational output.
+This separates command execution from the REPL interface.
+
+### 5. Decorator-Based Command Registration
+
+**Implementation:** `app/command_registry.py`
+
+The Decorator Pattern is used to register calculator commands with descriptions.
+
+Commands are registered using decorators such as:
+
+```python
+@registry.register("history", "Show calculation history")
+```
+
+The registry generates help information dynamically from registered commands.
+
+This reduces the need to manually maintain separate command descriptions.
+
+## Colorama Terminal Output
+
+**Implementation:** `app/repl.py`
+
+Colorama provides color-coded terminal messages to improve readability.
+
+The application uses different colors to distinguish:
+
+- Green: Successful calculations and operations
+- Red: Errors and invalid commands
+- Yellow: Warnings and informational messages
+- Cyan: Welcome messages and history information
+
+This is one of the project's optional enhancements.
 
 ## Calculation History and CSV Persistence
 
-The application stores completed calculations in history.
+The calculator maintains a history of completed calculations.
 
-Calculation history can be viewed, cleared, restored using undo/redo, and exported or imported using CSV files.
+History records contain operation names, operands, results, and timestamps.
 
-Pandas is used for CSV data handling.
+The application uses pandas for CSV-based persistence.
 
-Automatic saving is controlled through the application configuration, while the `save` and `load` commands support manual history backups.
+### Automatic Saving
 
-## Logging and Error Handling
+When `CALCULATOR_AUTO_SAVE=true`, the calculator automatically saves completed calculations to:
 
-The application records completed calculations using its logging observer.
+```text
+history/calculation_history.csv
+```
 
-Logging locations and filenames can be configured through environment variables.
+History changes performed through the REPL are also synchronized with the automatic history file.
 
-Input validation and exception handling help the calculator respond to invalid input, unsupported operations, and arithmetic errors without unexpectedly terminating the REPL.
+### Manual Saving and Loading
+
+The `save` command creates a separate backup:
+
+```text
+history/manual_history.csv
+```
+
+The `load` command restores calculations from this manual backup.
+
+Keeping manual and automatic files separate prevents automatic clearing from overwriting a previously saved manual backup.
+
+### Maximum History Size
+
+The `CALCULATOR_MAX_HISTORY_SIZE` setting controls the number of calculations retained in history.
+
+With the default value of 100, older calculations are removed when the limit is exceeded.
+
+## Logging
+
+The calculator uses Python's logging module and the Observer Design Pattern to record completed calculations.
+
+By default, log messages are stored in:
+
+```text
+logs/calculator.log
+```
+
+Logging provides a record of completed arithmetic operations and their results.
+
+## Input Validation and Error Handling
+
+The application includes validation and exception handling for arithmetic operations and REPL commands.
+
+Examples include:
+
+- Invalid numeric input
+- Division by zero
+- Non-finite numeric input
+- Inputs exceeding configured limits
+- Missing CSV history files
+- Invalid CSV history formats
+- Unknown calculator commands
+
+Error handling allows the calculator to continue running after recoverable input errors.
 
 ## Automated Testing
 
-The project uses pytest for automated unit testing.
+The project uses pytest for automated unit testing and pytest-cov for code coverage measurement.
 
-Tests cover arithmetic operations, calculation history, configuration, design patterns, command execution, and REPL functionality.
+Tests cover arithmetic operations, calculation execution, history management, undo/redo, configuration, observers, command registration, command execution, and REPL behavior.
 
-Run all tests:
+### Run All Tests
 
 ```bash
 python -m pytest -q
 ```
 
-Run tests with coverage reporting:
+### Generate a Coverage Report
 
 ```bash
 python -m pytest --cov=app --cov-report=term-missing
 ```
 
-Enforce the required minimum of 90% code coverage:
+### Enforce Minimum 90% Coverage
 
 ```bash
 python -m pytest --cov=app --cov-report=term-missing --cov-fail-under=90
 ```
 
-### Latest Verified Local Test Results
+### Latest Verified Test Results
 
-- 101 automated tests passed
-- 97.56% total code coverage
-- Required minimum coverage: 90%
+**Local testing environment:** Python 3.14.7 on macOS
 
-These results were recorded during development. Additional configuration tests have since been added.
+| Metric | Result |
+|---|---|
+| Total tests | 109 |
+| Passed | 109 |
+| Failed | 0 |
+| Total code coverage | 98.48% |
+| Required coverage | 90% |
+| Coverage requirement | Passed |
 
-## Continuous Integration
+### Coverage by Component
 
-GitHub Actions automatically runs the project's test workflow when changes are pushed to the `main` branch or a pull request targets `main`.
+| Component | Coverage |
+|---|---:|
+| `calculation.py` | 100% |
+| `calculator.py` | 100% |
+| `calculator_config.py` | 92% |
+| `calculator_memento.py` | 100% |
+| `command_registry.py` | 100% |
+| `commands.py` | 100% |
+| `history.py` | 100% |
+| `observers.py` | 100% |
+| `operations.py` | 100% |
+| `repl.py` | 94% |
+| **Overall** | **98.48%** |
 
-The workflow installs dependencies, runs pytest, generates coverage results, and enforces the minimum 90% coverage requirement.
+## Continuous Integration with GitHub Actions
 
-The workflow configuration is located at:
+The project uses GitHub Actions for automated testing.
+
+The workflow is located at:
 
 ```text
 .github/workflows/python-app.yml
 ```
 
-The latest reported GitHub Actions run completed successfully.
+The workflow runs when:
+
+- Changes are pushed to `main`
+- Pull requests target `main`
+- The workflow is manually triggered
+
+The workflow uses Python 3.11, installs project dependencies, runs pytest, and enforces the minimum 90% coverage requirement.
+
+GitHub Actions helps verify that changes do not break existing functionality.
 
 ## Git Version Control
 
-Git is used to track development progress through incremental commits.
+Git is used throughout development to track changes through incremental commits.
 
-Changes are committed and pushed to GitHub as features, tests, and improvements are implemented.
+The development process includes separate commits for calculator functionality, design patterns, configuration, automated tests, REPL improvements, and documentation.
 
-The repository includes a `.gitignore` file to exclude local virtual environments, temporary files, generated output, and sensitive environment configuration.
+The `.gitignore` file excludes generated files, virtual environments, temporary data, and local environment configuration.
 
 ## GitHub Repository
 
@@ -341,8 +485,14 @@ https://github.com/islamnavid/midterm_is601
 
 ## Development Status
 
-The calculator implements the required arithmetic operations, history management, configuration, design patterns, logging, CSV persistence, automated testing, and continuous integration.
+The Enhanced Calculator Command-Line Application implements the required calculator functionality, design patterns, history management, configuration, logging, CSV persistence, automated testing, and continuous integration.
 
-The project also includes the three optional enhancements: Command Pattern, decorator-based dynamic help, and Colorama terminal output.
+All three optional enhancements have also been implemented:
+
+1. Command Design Pattern
+2. Decorator-based dynamic help
+3. Colorama terminal output
+
+The latest verified local test run completed with **109 passing tests and 98.48% code coverage**, exceeding the project's minimum coverage requirement.
 
 Developed for the NJIT IS601 Midterm Project.

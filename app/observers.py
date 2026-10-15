@@ -3,29 +3,35 @@
 
 import logging
 from pathlib import Path
+from uuid import uuid4
 
 
 class LoggingObserver:
-    """Log completed calculations."""
+    """Log calculator events and completed calculations."""
 
     def __init__(self, log_file="calculator.log"):
         log_path = Path(log_file)
         log_path.parent.mkdir(parents=True, exist_ok=True)
 
+        # Create a unique logger for each observer instance.
         self.logger = logging.getLogger(
-            f"calculator.observer.{id(self)}"
+            f"calculator.observer.{uuid4().hex}"
         )
+
         self.logger.setLevel(logging.INFO)
         self.logger.propagate = False
 
         handler = logging.FileHandler(
-            log_path, encoding="utf-8"
+            log_path,
+            encoding="utf-8"
         )
+
         handler.setFormatter(
             logging.Formatter(
                 "%(asctime)s - %(levelname)s - %(message)s"
             )
         )
+
         self.logger.addHandler(handler)
 
     def update(self, calculation):
@@ -37,6 +43,14 @@ class LoggingObserver:
             calculation.operand2,
             calculation.result,
         )
+
+    def log_warning(self, message):
+        """Record a calculator warning."""
+        self.logger.warning("%s", message)
+
+    def log_error(self, message):
+        """Record a calculator error."""
+        self.logger.error("%s", message)
 
 
 class AutoSaveObserver:

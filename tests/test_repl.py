@@ -1,3 +1,4 @@
+
 """Tests for the calculator REPL."""
 
 from unittest.mock import patch
@@ -5,6 +6,7 @@ from unittest.mock import patch
 import pytest
 
 from app.repl import main
+from app.calculator_config import CalculatorConfig
 
 
 def run_repl(commands, capsys):
@@ -108,3 +110,94 @@ def test_keyboard_interrupt(capsys):
 def test_eof(capsys):
     output = run_repl([EOFError()], capsys)
     assert "Goodbye!" in output
+
+
+@pytest.fixture
+def isolated_log_file(tmp_path, monkeypatch):
+    """Redirect calculator logging to a temporary test file."""
+    log_file = tmp_path / "calculator.log"
+
+    original_init = CalculatorConfig.__init__
+
+    def patched_init(self, *args, **kwargs):
+        original_init(self, *args, **kwargs)
+        self.log_file = log_file
+        self.auto_save = False
+
+    monkeypatch.setattr(
+        CalculatorConfig,
+        "__init__",
+        patched_init
+    )
+
+    return log_file
+
+
+def test_repl_logs_successful_calculation(
+    capsys, isolated_log_file
+):
+    """Successful calculations should produce INFO logs."""
+    run_repl(["add 10 5", "exit"], capsys)
+
+    log_content = isolated_log_file.read_text(
+        encoding="utf-8"
+    )
+
+    assert "INFO" in log_content
+    assert "add: 10.0, 5.0 = 15.0" in log_content
+
+
+def test_repl_logs_division_by_zero(
+    capsys, isolated_log_file
+):
+    """Division by zero should produce an ERROR log."""
+    run_repl(["divide 10 0", "exit"], capsys)
+
+    log_content = isolated_log_file.read_text(
+        encoding="utf-8"
+    )
+
+    assert "ERROR" in log_content
+    assert "Cannot divide by zero" in log_content
+
+
+def test_repl_logs_invalid_operand_count(
+    capsys, isolated_log_file
+):
+    """Missing operands should produce a WARNING log."""
+    run_repl(["add 10", "exit"], capsys)
+
+    log_content = isolated_log_file.read_text(
+        encoding="utf-8"
+    )
+
+    assert "WARNING" in log_content
+    assert "Invalid number of operands" in log_content
+
+
+def test_repl_logs_unknown_command(
+    capsys, isolated_log_file
+):
+    """Unknown commands should produce a WARNING log."""
+    run_repl(["unknown", "exit"], capsys)
+
+    log_content = isolated_log_file.read_text(
+        encoding="utf-8"
+    )
+
+    assert "WARNING" in log_content
+    assert "Unknown command: unknown" in log_content
+
+
+def test_repl_logs_invalid_number(
+    capsys, isolated_log_file
+):
+    """Invalid numeric input should produce an ERROR log."""
+    run_repl(["add abc 5", "exit"], capsys)
+
+    log_content = isolated_log_file.read_text(
+        encoding="utf-8"
+    )
+
+    assert "ERROR" in log_content
+    assert "could not convert string to float" in log_content

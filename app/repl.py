@@ -17,11 +17,10 @@ def main():
     calculator = Calculator()
 
     # Register the logging observer.
-    calculator.add_observer(
-        LoggingObserver(
-            log_file=calculator.config.log_file
-        )
+    logging_observer = LoggingObserver(
+        log_file=calculator.config.log_file
     )
+    calculator.add_observer(logging_observer)
 
     # Register automatic history saving if enabled.
     if calculator.config.auto_save:
@@ -78,6 +77,8 @@ def main():
                     FileNotFoundError,
                     OSError,
                 ) as error:
+                    logging_observer.log_error(str(error))
+
                     print(
                         Fore.RED
                         + f"Error: {error}"
@@ -90,6 +91,10 @@ def main():
             if command_name in OperationFactory.list_operations():
 
                 if len(parts) != 3:
+                    logging_observer.log_warning(
+                        f"Invalid number of operands: {user_input}"
+                    )
+
                     print(
                         Fore.RED
                         + "Usage: operation number1 number2"
@@ -122,6 +127,10 @@ def main():
                     ZeroDivisionError,
                     OverflowError,
                 ) as error:
+                    logging_observer.log_error(
+                        f"{command_name}: {error}"
+                    )
+
                     print(
                         Fore.RED
                         + f"Error: {error}"
@@ -129,6 +138,10 @@ def main():
                     )
 
             else:
+                logging_observer.log_warning(
+                    f"Unknown command: {command_name}"
+                )
+
                 print(
                     Fore.RED
                     + "Unknown command. "

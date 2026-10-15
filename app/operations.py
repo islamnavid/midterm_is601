@@ -36,10 +36,12 @@ def root(a: float, b: float) -> float:
     """Calculate the nth root of a number."""
     if b == 0:
         raise ValueError("Root degree cannot be zero.")
+
     if a < 0:
-        if not b.is_integer() or int(b) % 2 == 0:
+        if not float(b).is_integer() or int(b) % 2 == 0:
             raise ValueError("Negative numbers require an odd integer root.")
         return -((-a) ** (1 / b))
+
     return a ** (1 / b)
 
 

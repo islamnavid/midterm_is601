@@ -67,3 +67,32 @@ def percent(a: float, b: float) -> float:
 def abs_diff(a: float, b: float) -> float:
     """Return the absolute difference between two numbers."""
     return abs(a - b)
+
+
+class OperationFactory:
+    """Factory for selecting calculator operations."""
+
+    _operations = {
+        "add": add,
+        "subtract": subtract,
+        "multiply": multiply,
+        "divide": divide,
+        "power": power,
+        "root": root,
+        "modulus": modulus,
+        "int_divide": int_divide,
+        "percent": percent,
+        "abs_diff": abs_diff,
+    }
+
+    @classmethod
+    def create_operation(cls, operation_name: str):
+        """Return the operation matching the given name."""
+        operation = cls._operations.get(operation_name.lower())
+
+        if operation is None:
+            raise ValueError(
+                f"Unsupported operation: {operation_name}"
+            )
+
+        return operation

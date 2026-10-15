@@ -66,3 +66,38 @@ def test_negative_exponent():
 def test_invalid_complex_power():
     with pytest.raises(ValueError):
         power(-4, 0.5)
+
+from app.operations import OperationFactory
+
+
+@pytest.mark.parametrize(
+    "operation_name,a,b,expected",
+    [
+        ("add", 10, 5, 15),
+        ("subtract", 10, 5, 5),
+        ("multiply", 10, 5, 50),
+        ("divide", 10, 5, 2),
+        ("power", 2, 3, 8),
+        ("root", 16, 2, 4),
+        ("modulus", 10, 3, 1),
+        ("int_divide", 10, 3, 3),
+        ("percent", 25, 100, 25),
+        ("abs_diff", 5, 12, 7),
+    ],
+)
+def test_operation_factory(operation_name, a, b, expected):
+    """Verify that the Factory selects the correct operation."""
+    operation = OperationFactory.create_operation(operation_name)
+    assert operation(a, b) == pytest.approx(expected)
+
+
+def test_operation_factory_invalid_name():
+    """Verify that unsupported operations raise an error."""
+    with pytest.raises(ValueError, match="Unsupported operation"):
+        OperationFactory.create_operation("unknown")
+
+
+def test_operation_factory_case_insensitive():
+    """Verify that operation names are case-insensitive."""
+    operation = OperationFactory.create_operation("ADD")
+    assert operation(10, 5) == 15

@@ -5,3 +5,4 @@ __pycache__/
 htmlcov/
 .env
 *.log
+history_test.csv

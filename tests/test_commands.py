@@ -60,7 +60,6 @@ def test_history_with_calculations(calculator):
     assert "15" in result
 
 
-
 def test_undo_without_history(calculator):
     result = UndoCommand(calculator).execute()
     assert result == "Nothing to undo."
@@ -101,6 +100,29 @@ def test_clear_command(calculator):
     assert calculator.history.count() == 1
 
 
+def test_clear_creates_one_undo_checkpoint(calculator):
+    """Clearing history must create exactly one undo checkpoint."""
+    calculator.calculate("add", 10, 5)
+
+    checkpoints_before = len(
+        calculator.history._undo_stack
+    )
+
+    ClearCommand(calculator).execute()
+
+    assert calculator.history.count() == 0
+
+    assert len(calculator.history._undo_stack) == (
+        checkpoints_before + 1
+    )
+
+    assert UndoCommand(calculator).execute() == (
+        "Undo successful."
+    )
+
+    assert calculator.history.count() == 1
+
+
 def test_save_command(calculator, tmp_path):
     calculator.calculate("add", 10, 5)
 
@@ -136,6 +158,32 @@ def test_undo_after_load(calculator):
     assert UndoCommand(calculator).execute() == (
         "Undo successful."
     )
+    assert calculator.history.count() == 0
+
+
+def test_load_creates_one_undo_checkpoint(calculator):
+    """Loading history must create exactly one undo checkpoint."""
+    calculator.calculate("add", 10, 5)
+
+    SaveCommand(calculator).execute()
+    ClearCommand(calculator).execute()
+
+    checkpoints_before = len(
+        calculator.history._undo_stack
+    )
+
+    LoadCommand(calculator).execute()
+
+    assert calculator.history.count() == 1
+
+    assert len(calculator.history._undo_stack) == (
+        checkpoints_before + 1
+    )
+
+    assert UndoCommand(calculator).execute() == (
+        "Undo successful."
+    )
+
     assert calculator.history.count() == 0
 
 

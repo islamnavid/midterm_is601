@@ -70,7 +70,7 @@ class ClearCommand(Command):
     """Clear calculation history."""
 
     def execute(self):
-        self.calculator.history.checkpoint()
+        # The history class creates its own undo checkpoint.
         self.calculator.history.clear()
         return "History cleared."
 
@@ -99,13 +99,9 @@ class LoadCommand(Command):
             / "manual_history.csv"
         )
 
-        history = self.calculator.history
-        previous_state = history.save_state()
-
-        history.load_from_csv(path)
-
-        history._undo_stack.append(previous_state)
-        history._redo_stack.clear()
+        # load_from_csv() already saves the previous state
+        # for undo and clears the redo stack.
+        self.calculator.history.load_from_csv(path)
 
         return f"History loaded from {path}"
 

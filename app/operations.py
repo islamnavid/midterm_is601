@@ -98,3 +98,8 @@ class OperationFactory:
             )
 
         return operation
+
+    @classmethod
+    def list_operations(cls):
+        """Return all available arithmetic operation names."""
+        return list(cls._operations.keys())

@@ -1,6 +1,8 @@
 
 """Command registration using the Decorator Pattern."""
 
+from app.operations import OperationFactory
+
 
 class CommandRegistry:
     """Register commands and generate help dynamically."""
@@ -24,11 +26,19 @@ class CommandRegistry:
         return self._commands.get(name)
 
     def get_help(self):
-        """Generate help text from registered commands."""
+        """Generate help text from registered commands and operations."""
         lines = ["Available commands:"]
 
         for name, description in self._descriptions.items():
             lines.append(f"  {name} - {description}")
+
+        lines.append("")
+        lines.append("Arithmetic operations:")
+
+        for operation_name in OperationFactory.list_operations():
+            lines.append(
+                f"  {operation_name} number1 number2"
+            )
 
         return "\n".join(lines)
 

@@ -6,6 +6,7 @@ from colorama import Fore, Style, init
 from app.calculator import Calculator
 from app.commands import registry
 from app.observers import LoggingObserver, AutoSaveObserver
+from app.operations import OperationFactory
 
 init(autoreset=True)
 
@@ -30,19 +31,6 @@ def main():
                 file_path=calculator.config.history_file
             )
         )
-
-    operations = {
-        "add",
-        "subtract",
-        "multiply",
-        "divide",
-        "power",
-        "root",
-        "modulus",
-        "int_divide",
-        "percent",
-        "abs_diff",
-    }
 
     print(
         Fore.CYAN
@@ -69,20 +57,12 @@ def main():
                     command = command_class(calculator)
                     result = command.execute()
 
-                    if command_name == "history":
+                    if command_name in ("history", "help"):
                         print(
                             Fore.CYAN
                             + str(result)
                             + Style.RESET_ALL
                         )
-
-                    elif command_name == "help":
-                        print(
-                            Fore.CYAN
-                            + str(result)
-                            + Style.RESET_ALL
-                        )
-
                     else:
                         print(
                             Fore.GREEN
@@ -106,8 +86,8 @@ def main():
 
                 continue
 
-            # Execute arithmetic operations.
-            if command_name in operations:
+            # Execute arithmetic operations dynamically.
+            if command_name in OperationFactory.list_operations():
 
                 if len(parts) != 3:
                     print(
@@ -127,7 +107,6 @@ def main():
                         operand2
                     )
 
-                    # Format result using CALCULATOR_PRECISION.
                     formatted_result = calculator.format_result(
                         result
                     )

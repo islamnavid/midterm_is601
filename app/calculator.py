@@ -52,3 +52,8 @@ class Calculator:
         self.notify_observers(calculation)
 
         return calculation.result
+    
+    def format_result(self, result):
+        """Format a calculation result using configured precision."""
+        return f"{result:.{self.config.precision}f}"
+

@@ -63,7 +63,8 @@ class CalculationHistory:
         return self._history[-1]
 
     def clear(self):
-        """Remove all calculations from history."""
+        """Remove all calculations while supporting undo."""
+        self.checkpoint()
         self._history.clear()
 
     def count(self):

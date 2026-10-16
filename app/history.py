@@ -1,6 +1,7 @@
 
-"""Manage calculator history."""
+"""Manage calculator history with undo, redo, and CSV persistence."""
 
+import math
 from pathlib import Path
 
 import pandas as pd
@@ -11,6 +12,14 @@ from app.calculator_memento import CalculatorMemento
 
 class CalculationHistory:
     """Store and manage completed calculations."""
+
+    CSV_COLUMNS = [
+        "operation",
+        "operand1",
+        "operand2",
+        "result",
+        "timestamp",
+    ]
 
     def __init__(self, max_history_size=100):
         if max_history_size <= 0:
@@ -62,7 +71,7 @@ class CalculationHistory:
             self._history.pop(0)
 
     def get_all(self):
-        """Return all stored calculations."""
+        """Return a copy of stored calculations."""
         return self._history.copy()
 
     def get_last(self):
@@ -82,17 +91,9 @@ class CalculationHistory:
         return len(self._history)
 
     def save_to_csv(self, file_path):
-        """Save calculation history to a CSV file."""
+        """Serialize calculation history to a CSV file."""
         path = Path(file_path)
         path.parent.mkdir(parents=True, exist_ok=True)
-
-        columns = [
-            "operation",
-            "operand1",
-            "operand2",
-            "result",
-            "timestamp",
-        ]
 
         records = [
             calculation.to_dict()
@@ -101,13 +102,13 @@ class CalculationHistory:
 
         dataframe = pd.DataFrame(
             records,
-            columns=columns
+            columns=self.CSV_COLUMNS
         )
 
         dataframe.to_csv(path, index=False)
 
     def load_from_csv(self, file_path):
-        """Load history from CSV with undo support."""
+        """Load validated CSV history while preserving undo support."""
         path = Path(file_path)
 
         if not path.exists():
@@ -115,17 +116,14 @@ class CalculationHistory:
                 f"History file not found: {path}"
             )
 
-        dataframe = pd.read_csv(path)
+        try:
+            dataframe = pd.read_csv(path)
+        except (pd.errors.ParserError, pd.errors.EmptyDataError) as error:
+            raise ValueError(
+                "Invalid history CSV format"
+            ) from error
 
-        required_columns = {
-            "operation",
-            "operand1",
-            "operand2",
-            "result",
-            "timestamp",
-        }
-
-        if not required_columns.issubset(dataframe.columns):
+        if not set(self.CSV_COLUMNS).issubset(dataframe.columns):
             raise ValueError(
                 "Invalid history CSV format"
             )
@@ -133,22 +131,62 @@ class CalculationHistory:
         loaded_calculations = []
 
         for _, row in dataframe.iterrows():
-            calculation = Calculation(
-                operation=str(row["operation"]),
-                operand1=float(row["operand1"]),
-                operand2=float(row["operand2"]),
-            )
+            try:
+                operation = str(row["operation"])
+                operand1 = float(row["operand1"])
+                operand2 = float(row["operand2"])
+                saved_result = float(row["result"])
 
-            calculation.timestamp = pd.to_datetime(
-                row["timestamp"]
-            ).to_pydatetime()
+                if not all(
+                    math.isfinite(value)
+                    for value in (operand1, operand2, saved_result)
+                ):
+                    raise ValueError(
+                        "Non-finite calculation value"
+                    )
 
-            loaded_calculations.append(calculation)
+                timestamp = pd.to_datetime(
+                    row["timestamp"],
+                    errors="raise"
+                )
 
-        # Preserve the previous state for undo.
+                if pd.isna(timestamp):
+                    raise ValueError(
+                        "Missing calculation timestamp"
+                    )
+
+                calculation = Calculation(
+                    operation=operation,
+                    operand1=operand1,
+                    operand2=operand2,
+                )
+
+                if not math.isclose(
+                    calculation.result,
+                    saved_result,
+                    rel_tol=1e-9,
+                    abs_tol=1e-9,
+                ):
+                    raise ValueError(
+                        "Saved calculation result does not match"
+                    )
+
+                calculation.timestamp = timestamp.to_pydatetime()
+                loaded_calculations.append(calculation)
+
+            except (
+                ValueError,
+                TypeError,
+                OverflowError,
+                pd.errors.OutOfBoundsDatetime,
+            ) as error:
+                raise ValueError(
+                    "Invalid history CSV format"
+                ) from error
+
+        # Modify history only after all CSV rows are validated.
         self.checkpoint()
 
-        # Keep only the most recent calculations.
         self._history = loaded_calculations[
             -self.max_history_size:
         ]

@@ -96,3 +96,96 @@ def test_undo_after_loading(tmp_path):
     assert history.count() == 1
     assert history.undo() is True
     assert history.count() == 0
+
+
+@pytest.mark.parametrize(
+    "value",
+    ["true", "TRUE", "True", " true "],
+)
+def test_auto_save_enabled(monkeypatch, value):
+    """Accept valid true values for automatic saving."""
+    monkeypatch.setenv("CALCULATOR_AUTO_SAVE", value)
+
+    config = CalculatorConfig()
+
+    assert config.auto_save is True
+
+
+@pytest.mark.parametrize(
+    "value",
+    ["false", "FALSE", "False", " false "],
+)
+def test_auto_save_disabled(monkeypatch, value):
+    """Accept valid false values for automatic saving."""
+    monkeypatch.setenv("CALCULATOR_AUTO_SAVE", value)
+
+    config = CalculatorConfig()
+
+    assert config.auto_save is False
+
+
+@pytest.mark.parametrize(
+    "value",
+    ["maybe", "yes", "1", ""],
+)
+def test_invalid_auto_save(monkeypatch, value):
+    """Reject invalid automatic saving settings."""
+    monkeypatch.setenv("CALCULATOR_AUTO_SAVE", value)
+
+    with pytest.raises(
+        ValueError,
+        match="CALCULATOR_AUTO_SAVE must be true or false"
+    ):
+        CalculatorConfig()
+
+
+@pytest.mark.parametrize(
+    "value",
+    ["0", "-1", "nan", "inf", "-inf"],
+)
+def test_invalid_max_input_value(monkeypatch, value):
+    """Reject invalid maximum input values."""
+    monkeypatch.setenv(
+        "CALCULATOR_MAX_INPUT_VALUE", value
+    )
+
+    with pytest.raises(ValueError):
+        CalculatorConfig()
+
+
+def test_invalid_encoding(monkeypatch):
+    """Reject unsupported text encodings."""
+    monkeypatch.setenv(
+        "CALCULATOR_DEFAULT_ENCODING",
+        "not-a-real-encoding"
+    )
+
+    with pytest.raises(
+        ValueError,
+        match="Unsupported encoding"
+    ):
+        CalculatorConfig()
+
+
+def test_valid_custom_encoding(monkeypatch):
+    """Accept a valid text encoding."""
+    monkeypatch.setenv(
+        "CALCULATOR_DEFAULT_ENCODING", "utf-8"
+    )
+
+    config = CalculatorConfig()
+
+    assert config.default_encoding == "utf-8"
+
+
+def test_invalid_environment_history_limit(monkeypatch):
+    """Reject invalid history limits from environment."""
+    monkeypatch.setenv(
+        "CALCULATOR_MAX_HISTORY_SIZE", "0"
+    )
+
+    with pytest.raises(
+        ValueError,
+        match="Maximum history size must be positive"
+    ):
+        CalculatorConfig()

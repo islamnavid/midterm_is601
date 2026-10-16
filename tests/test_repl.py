@@ -1,6 +1,7 @@
-
 """Tests for the calculator REPL."""
 
+import runpy
+import warnings
 from unittest.mock import patch
 
 import pytest
@@ -201,3 +202,53 @@ def test_repl_logs_invalid_number(
 
     assert "ERROR" in log_content
     assert "could not convert string to float" in log_content
+
+
+@pytest.mark.parametrize(
+    "error_type",
+    [ValueError, FileNotFoundError, OSError],
+)
+def test_registered_command_error_is_handled(
+    error_type, capsys, isolated_log_file
+):
+    """Command failures should be reported, logged, and not stop the REPL."""
+    from app.repl import registry
+
+    class FailingCommand:
+        def __init__(self, calculator):
+            self.calculator = calculator
+
+        def execute(self):
+            raise error_type("Simulated command failure")
+
+    original_get_command = registry.get_command
+
+    def get_command(name):
+        if name == "broken":
+            return FailingCommand
+        return original_get_command(name)
+
+    with patch.object(registry, "get_command", side_effect=get_command):
+        output = run_repl(["broken", "exit"], capsys)
+
+    assert "Error: Simulated command failure" in output
+    assert "Goodbye!" in output
+    log_content = isolated_log_file.read_text(encoding="utf-8")
+    assert "ERROR" in log_content
+    assert "Simulated command failure" in log_content
+
+
+def test_module_entry_point(capsys, isolated_log_file):
+    """Running the REPL as __main__ should start and exit cleanly."""
+    with patch("builtins.input", side_effect=["exit"]):
+        with warnings.catch_warnings():
+            warnings.filterwarnings(
+                "ignore",
+                message=r".*app\.repl.*found in sys\.modules.*",
+                category=RuntimeWarning,
+            )
+            runpy.run_module("app.repl", run_name="__main__")
+
+    output = capsys.readouterr().out
+    assert "Welcome to the Calculator!" in output
+    assert "Goodbye!" in output

@@ -1,4 +1,3 @@
-
 # Enhanced Calculator Command-Line Application
 
 ## Project Overview
@@ -60,6 +59,7 @@ midterm_is601/
 ├── tests/
 │   ├── __init__.py
 │   ├── test_calculation.py
+│   ├── test_calculator.py
 │   ├── test_command_registry.py
 │   ├── test_commands.py
 │   ├── test_configuration.py
@@ -218,13 +218,10 @@ With `CALCULATOR_PRECISION=2`:
 ```text
 calculator> add 10 5
 Result: 15.00
-
 calculator> multiply 2.5 3
 Result: 7.50
-
 calculator> divide 10 3
 Result: 3.33
-
 calculator> power 2 3
 Result: 8.00
 ```
@@ -249,30 +246,22 @@ Calculation precision affects displayed results without changing the underlying 
 ```text
 calculator> add 10 5
 Result: 15.00
-
 calculator> multiply 4 5
 Result: 20.00
-
 calculator> history
 Calculation History:
 add: 10.0, 5.0 = 15.0
 multiply: 4.0, 5.0 = 20.0
-
 calculator> undo
 Undo successful.
-
 calculator> redo
 Redo successful.
-
 calculator> save
 History saved to history/manual_history.csv
-
 calculator> clear
 History cleared.
-
 calculator> load
 History loaded from history/manual_history.csv
-
 calculator> exit
 Goodbye!
 ```
@@ -404,7 +393,7 @@ For example:
 history/manual_history.csv
 ```
 
-The `load` command restores calculations from the manual backup.
+The `load` command restores calculations from the manual backup. CSV data is validated for required columns, valid operations, finite numeric values, matching results, and valid timestamps before the current history is changed.
 
 Keeping manual and automatic history files separate prevents automatic saving from overwriting a previously created manual backup.
 
@@ -500,6 +489,7 @@ Tests cover:
 - Command execution
 - REPL functionality
 - Logging and error handling
+- CSV format validation and safe history loading
 
 ### Run All Tests
 
@@ -525,10 +515,10 @@ python -m pytest --cov=app --cov-report=term-missing --cov-fail-under=90
 
 | Metric | Result |
 |---|---|
-| Total tests | 142 |
-| Passed | 142 |
+| Total tests | 197 |
+| Passed | 197 |
 | Failed | 0 |
-| Total code coverage | 98.31% |
+| Total code coverage | 98.97% |
 | Required coverage | 90% |
 | Coverage requirement | Passed |
 
@@ -538,17 +528,18 @@ python -m pytest --cov=app --cov-report=term-missing --cov-fail-under=90
 |---|---:|
 | `calculation.py` | 100% |
 | `calculator.py` | 100% |
-| `calculator_config.py` | 92% |
+| `calculator_config.py` | 100% |
 | `calculator_memento.py` | 100% |
 | `command_registry.py` | 100% |
 | `commands.py` | 100% |
 | `exceptions.py` | 100% |
 | `history.py` | 100% |
 | `input_validators.py` | 100% |
+| `logger.py` | 100% |
 | `observers.py` | 100% |
 | `operations.py` | 100% |
 | `repl.py` | 93% |
-| **Overall** | **98.31%** |
+| **Overall** | **98.97%** |
 
 ## Continuous Integration with GitHub Actions
 
@@ -568,7 +559,7 @@ The workflow is configured to run when:
 
 The workflow uses Python 3.11, installs project dependencies, runs pytest, and enforces the minimum 90% coverage requirement.
 
-GitHub Actions helps verify that changes do not break existing functionality.
+The workflow for commit `80c1181` completed successfully on GitHub Actions (Python 3.11). GitHub Actions helps verify that changes do not break existing functionality.
 
 ## Git Version Control
 
@@ -592,6 +583,6 @@ All three optional enhancements have been implemented:
 2. Decorator-based dynamic help
 3. Colorama terminal output
 
-The latest verified local test run completed with **142 passing tests and 98.31% code coverage**, exceeding the project's minimum 90% coverage requirement.
+The latest verified local test run completed with **197 passing tests and 98.97% code coverage**, exceeding the project's minimum 90% coverage requirement.
 
 Developed for the NJIT IS601 Midterm Project.

@@ -515,10 +515,10 @@ python -m pytest --cov=app --cov-report=term-missing --cov-fail-under=90
 
 | Metric | Result |
 |---|---|
-| Total tests | 197 |
-| Passed | 197 |
+Total tests | 201
+Passed | 201
 | Failed | 0 |
-| Total code coverage | 98.97% |
+| Total code coverage | 100% |
 | Required coverage | 90% |
 | Coverage requirement | Passed |
 
@@ -538,8 +538,8 @@ python -m pytest --cov=app --cov-report=term-missing --cov-fail-under=90
 | `logger.py` | 100% |
 | `observers.py` | 100% |
 | `operations.py` | 100% |
-| `repl.py` | 93% |
-| **Overall** | **98.97%** |
+| `repl.py` | 100% |
+| **Overall** | **100%** |
 
 ## Continuous Integration with GitHub Actions
 
@@ -583,6 +583,6 @@ All three optional enhancements have been implemented:
 2. Decorator-based dynamic help
 3. Colorama terminal output
 
-The latest verified local test run completed with **197 passing tests and 98.97% code coverage**, exceeding the project's minimum 90% coverage requirement.
+The latest verified local test run completed with **201 passing tests and 100% statement coverage**, exceeding the project's minimum 90% coverage requirement.
 
 Developed for the NJIT IS601 Midterm Project.

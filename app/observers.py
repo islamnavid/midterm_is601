@@ -9,8 +9,11 @@ from app.logger import Logger
 class LoggingObserver:
     """Log calculator events and completed calculations."""
 
-    def __init__(self, log_file="calculator.log"):
-        self.logger = Logger.create_logger(log_file)
+    def __init__(self, log_file="calculator.log", encoding="utf-8"):
+        self.logger = Logger.create_logger(
+            log_file,
+            encoding=encoding
+        )
 
     def update(self, calculation):
         """Record a completed calculation."""

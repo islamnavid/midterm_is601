@@ -6,6 +6,7 @@ import logging
 import pandas as pd
 
 from app.calculator import Calculator
+from app.logger import Logger
 from app.observers import AutoSaveObserver, LoggingObserver
 
 
@@ -131,3 +132,76 @@ def test_logging_observer_logger_configuration(tmp_path):
         observer.logger.handlers[0],
         logging.FileHandler
     )
+
+
+# ---------------------------------------------------------
+# Tests for configurable logging encoding
+# ---------------------------------------------------------
+
+
+def test_logging_observer_default_encoding(tmp_path):
+    """Verify UTF-8 is the default logging encoding."""
+    log_file = tmp_path / "default.log"
+
+    observer = LoggingObserver(log_file=log_file)
+
+    handler = observer.logger.handlers[0]
+
+    assert isinstance(handler, logging.FileHandler)
+    assert handler.encoding.lower().replace("-", "") == "utf8"
+
+    handler.close()
+    observer.logger.removeHandler(handler)
+
+
+def test_logging_observer_custom_encoding(tmp_path):
+    """Verify log messages use the configured UTF-16 encoding."""
+    log_file = tmp_path / "custom_encoding.log"
+
+    observer = LoggingObserver(
+        log_file=log_file,
+        encoding="utf-16"
+    )
+
+    observer.log_warning("Encoding test: café")
+
+    for handler in observer.logger.handlers:
+        handler.flush()
+
+    # Verify the file contains a UTF-16 byte-order marker.
+    file_bytes = log_file.read_bytes()
+    assert file_bytes.startswith((b"\xff\xfe", b"\xfe\xff"))
+
+    # Verify the message can be decoded using UTF-16.
+    log_content = log_file.read_text(encoding="utf-16")
+
+    assert "WARNING" in log_content
+    assert "Encoding test: café" in log_content
+
+    for handler in observer.logger.handlers:
+        handler.close()
+        observer.logger.removeHandler(handler)
+
+
+def test_logger_custom_encoding(tmp_path):
+    """Verify Logger.create_logger applies custom encoding."""
+    log_file = tmp_path / "logger_encoding.log"
+
+    logger = Logger.create_logger(
+        log_file=log_file,
+        encoding="utf-16"
+    )
+
+    logger.info("Custom encoding: café")
+
+    for handler in logger.handlers:
+        handler.flush()
+
+    log_content = log_file.read_text(encoding="utf-16")
+
+    assert "INFO" in log_content
+    assert "Custom encoding: café" in log_content
+
+    for handler in logger.handlers:
+        handler.close()
+        logger.removeHandler(handler)

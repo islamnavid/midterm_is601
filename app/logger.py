@@ -10,8 +10,8 @@ class Logger:
     """Create configured file loggers for calculator components."""
 
     @staticmethod
-    def create_logger(log_file="calculator.log"):
-        """Create a unique logger that writes to the specified file."""
+    def create_logger(log_file="calculator.log", encoding="utf-8"):
+        """Create a unique logger with configurable file encoding."""
         log_path = Path(log_file)
         log_path.parent.mkdir(parents=True, exist_ok=True)
 
@@ -24,7 +24,7 @@ class Logger:
 
         handler = logging.FileHandler(
             log_path,
-            encoding="utf-8"
+            encoding=encoding
         )
 
         handler.setFormatter(

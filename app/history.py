@@ -21,13 +21,14 @@ class CalculationHistory:
         "timestamp",
     ]
 
-    def __init__(self, max_history_size=100):
+    def __init__(self, max_history_size=100, encoding="utf-8"):
         if max_history_size <= 0:
             raise ValueError(
                 "Maximum history size must be positive."
             )
 
         self.max_history_size = max_history_size
+        self.encoding = encoding
         self._history = []
         self._undo_stack = []
         self._redo_stack = []
@@ -105,7 +106,11 @@ class CalculationHistory:
             columns=self.CSV_COLUMNS
         )
 
-        dataframe.to_csv(path, index=False)
+        dataframe.to_csv(
+            path,
+            index=False,
+            encoding=self.encoding,
+        )
 
     def load_from_csv(self, file_path):
         """Load validated CSV history while preserving undo support."""
@@ -117,10 +122,18 @@ class CalculationHistory:
             )
 
         try:
-            dataframe = pd.read_csv(path)
-        except (pd.errors.ParserError, pd.errors.EmptyDataError) as error:
+            dataframe = pd.read_csv(
+                path,
+                encoding=self.encoding,
+            )
+        except (
+            pd.errors.ParserError,
+            pd.errors.EmptyDataError,
+            UnicodeError,
+            LookupError,
+        ) as error:
             raise ValueError(
-                "Invalid history CSV format"
+                "Invalid history CSV format or encoding"
             ) from error
 
         if not set(self.CSV_COLUMNS).issubset(dataframe.columns):

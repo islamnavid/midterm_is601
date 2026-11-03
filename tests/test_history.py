@@ -275,3 +275,52 @@ def test_undo_after_successful_load(tmp_path):
 
     assert history.undo() is True
     assert history.get_last().result == 12
+
+
+# ---------------------------------------------------------
+# Tests for configurable CSV encoding
+# ---------------------------------------------------------
+
+
+def test_csv_default_encoding():
+    """Verify UTF-8 is the default history encoding."""
+    history = CalculationHistory()
+
+    assert history.encoding == "utf-8"
+
+
+def test_csv_custom_encoding_save_and_load(tmp_path):
+    """Verify CSV history works with a non-default encoding."""
+    file_path = tmp_path / "custom_encoding.csv"
+
+    history = CalculationHistory(encoding="utf-16")
+    history.add(Calculation("add", 10, 5))
+    history.add(Calculation("multiply", 4, 5))
+
+    history.save_to_csv(file_path)
+
+    assert file_path.exists()
+
+    # UTF-16 files should contain a byte-order marker.
+    file_bytes = file_path.read_bytes()
+    assert file_bytes.startswith((b"\xff\xfe", b"\xfe\xff"))
+
+    loaded_history = CalculationHistory(encoding="utf-16")
+    loaded_history.load_from_csv(file_path)
+
+    assert loaded_history.count() == 2
+    assert loaded_history.get_all()[0].result == 15
+    assert loaded_history.get_last().result == 20
+
+
+def test_csv_invalid_encoding(tmp_path):
+    """Verify unsupported CSV encodings are rejected."""
+    file_path = tmp_path / "invalid_encoding.csv"
+
+    history = CalculationHistory(
+        encoding="not-a-real-encoding"
+    )
+    history.add(Calculation("add", 10, 5))
+
+    with pytest.raises(LookupError):
+        history.save_to_csv(file_path)

@@ -16,9 +16,10 @@ def main():
 
     calculator = Calculator()
 
-    # Register the logging observer.
+    # Register the logging observer with configured encoding.
     logging_observer = LoggingObserver(
-        log_file=calculator.config.log_file
+        log_file=calculator.config.log_file,
+        encoding=calculator.config.default_encoding
     )
     calculator.add_observer(logging_observer)
 

@@ -16,9 +16,10 @@ class Calculator:
         # Load configuration from environment variables.
         self.config = CalculatorConfig()
 
-        # Initialize history with the configured maximum size.
+        # Initialize history with configured settings.
         self.history = CalculationHistory(
-            max_history_size=self.config.max_history_size
+            max_history_size=self.config.max_history_size,
+            encoding=self.config.default_encoding
         )
 
         # Store registered observers.

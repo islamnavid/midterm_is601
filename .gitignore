@@ -9,3 +9,4 @@ history_test.csv
 calculation_history.csv
 history/
 logs/
+.DS_Store

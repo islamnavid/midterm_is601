@@ -11,68 +11,123 @@ It demonstrates object-oriented programming, software design patterns, environme
 The project also implements three optional enhancements:
 
 1. Command Design Pattern
+
 2. Decorator-based dynamic help generation
+
 3. Colorama terminal output
 
 ## Features
 
 - Ten basic and advanced arithmetic operations
+
 - Factory Design Pattern for arithmetic operation selection
+
 - Memento Design Pattern for undo and redo functionality
+
 - Observer Design Pattern for logging and automatic CSV saving
+
 - Command Design Pattern for calculator commands
+
 - Decorator-based command registration
+
 - Dynamic arithmetic operation discovery and help generation
+
 - Colorama for color-coded terminal output
+
 - Calculation history management using pandas
+
 - Manual CSV history saving and loading
+
 - Environment-based configuration using python-dotenv
+
 - Configurable maximum history size and result precision
+
 - Input validation with custom exceptions
+
 - INFO, WARNING, and ERROR logging
+
 - Automated unit testing using pytest
+
 - Code coverage measurement using pytest-cov
+
 - Continuous Integration using GitHub Actions
 
 ## Project Structure
 
 ```text
+
 midterm_is601/
+
 ├── .github/
+
 │   └── workflows/
+
 │       └── python-app.yml
+
 ├── app/
-│   ├── __init__.py
+
+│   ├── \_\_init\_\_.py
+
 │   ├── calculation.py
+
 │   ├── calculator.py
+
 │   ├── calculator_config.py
+
 │   ├── calculator_memento.py
+
 │   ├── command_registry.py
+
 │   ├── commands.py
+
 │   ├── exceptions.py
+
 │   ├── history.py
+
 │   ├── input_validators.py
+
 │   ├── logger.py
+
 │   ├── observers.py
+
 │   ├── operations.py
+
 │   └── repl.py
+
 ├── tests/
-│   ├── __init__.py
+
+│   ├── \_\_init\_\_.py
+
 │   ├── test_calculation.py
+
 │   ├── test_calculator.py
+
 │   ├── test_command_registry.py
+
 │   ├── test_commands.py
+
 │   ├── test_configuration.py
+
 │   ├── test_history.py
+
 │   ├── test_input_validators.py
+
 │   ├── test_memento.py
+
 │   ├── test_observer.py
+
 │   ├── test_operations.py
+
 │   └── test_repl.py
+
 ├── .env.example
+
 ├── .gitignore
+
 ├── requirements.txt
+
 └── README.md
+
 ```
 
 The application creates directories for generated log files and CSV calculation history.
@@ -84,14 +139,19 @@ The local `.env` configuration file is excluded from version control.
 ### 1. Clone the Repository
 
 ```bash
+
 git clone https://github.com/islamnavid/midterm_is601.git
+
 cd midterm_is601
+
 ```
 
 ### 2. Create a Virtual Environment
 
 ```bash
+
 python3 -m venv venv
+
 ```
 
 Activate the virtual environment.
@@ -99,27 +159,37 @@ Activate the virtual environment.
 On macOS or Linux:
 
 ```bash
+
 source venv/bin/activate
+
 ```
 
 On Windows:
 
 ```bash
+
 venv\Scripts\activate
+
 ```
 
 ### 3. Install Dependencies
 
 ```bash
+
 python -m pip install -r requirements.txt
+
 ```
 
 The main dependencies include:
 
 - pandas
+
 - python-dotenv
+
 - colorama
+
 - pytest
+
 - pytest-cov
 
 ### 4. Configure Environment Variables
@@ -129,13 +199,17 @@ Copy the example configuration file:
 On macOS or Linux:
 
 ```bash
+
 cp .env.example .env
+
 ```
 
 On Windows Command Prompt:
 
 ```cmd
+
 copy .env.example .env
+
 ```
 
 Review the configuration values and adjust them if needed.
@@ -149,15 +223,25 @@ The configuration is loaded using the `CalculatorConfig` class in `app/calculato
 An example configuration is:
 
 ```env
+
 CALCULATOR_LOG_DIR=logs
+
 CALCULATOR_HISTORY_DIR=history
+
 CALCULATOR_MAX_HISTORY_SIZE=100
+
 CALCULATOR_AUTO_SAVE=true
+
 CALCULATOR_PRECISION=2
+
 CALCULATOR_MAX_INPUT_VALUE=1000000
+
 CALCULATOR_DEFAULT_ENCODING=utf-8
+
 CALCULATOR_LOG_FILE=calculator.log
+
 CALCULATOR_HISTORY_FILE=calculation_history.csv
+
 ```
 
 ### Configuration Settings
@@ -181,15 +265,21 @@ Configuration settings allow application behavior to be modified without changin
 Start the application:
 
 ```bash
+
 python -m app.repl
+
 ```
 
 The application displays:
 
 ```text
+
 Welcome to the Calculator!
+
 Type 'help' for available commands.
+
 calculator>
+
 ```
 
 Users can enter arithmetic operations or calculator commands directly into the REPL.
@@ -216,14 +306,23 @@ The calculator supports ten arithmetic operations.
 With `CALCULATOR_PRECISION=2`:
 
 ```text
+
 calculator> add 10 5
+
 Result: 15.00
+
 calculator> multiply 2.5 3
+
 Result: 7.50
+
 calculator> divide 10 3
+
 Result: 3.33
+
 calculator> power 2 3
+
 Result: 8.00
+
 ```
 
 Calculation precision affects displayed results without changing the underlying stored calculation values.
@@ -244,26 +343,47 @@ Calculation precision affects displayed results without changing the underlying 
 ### Example History Management
 
 ```text
+
 calculator> add 10 5
+
 Result: 15.00
+
 calculator> multiply 4 5
+
 Result: 20.00
+
 calculator> history
+
 Calculation History:
+
 add: 10.0, 5.0 = 15.0
+
 multiply: 4.0, 5.0 = 20.0
+
 calculator> undo
+
 Undo successful.
+
 calculator> redo
+
 Redo successful.
+
 calculator> save
+
 History saved to history/manual_history.csv
+
 calculator> clear
+
 History cleared.
+
 calculator> load
+
 History loaded from history/manual_history.csv
+
 calculator> exit
+
 Goodbye!
+
 ```
 
 ## Design Patterns
@@ -289,8 +409,11 @@ The Memento Design Pattern preserves snapshots of calculation history.
 It supports:
 
 - Undoing calculations
+
 - Redoing previously undone changes
+
 - Restoring cleared history
+
 - Undoing history loading operations
 
 History changes create checkpoints so that previous states can be restored.
@@ -306,6 +429,7 @@ The Observer Design Pattern separates logging and automatic history persistence 
 The application includes:
 
 - `LoggingObserver`: Records completed calculations
+
 - `AutoSaveObserver`: Automatically saves calculation history to CSV
 
 Observers are notified after successful calculations.
@@ -323,12 +447,19 @@ Each command implements an `execute()` method.
 Examples include:
 
 - `HistoryCommand`
+
 - `UndoCommand`
+
 - `RedoCommand`
+
 - `ClearCommand`
+
 - `SaveCommand`
+
 - `LoadCommand`
+
 - `HelpCommand`
+
 - `ExitCommand`
 
 This separates command execution from the REPL interface.
@@ -342,7 +473,9 @@ Decorators register calculator commands with descriptions.
 For example:
 
 ```python
+
 @registry.register("history", "Show calculation history")
+
 ```
 
 The registry generates help information dynamically from registered commands.
@@ -360,7 +493,9 @@ Colorama provides color-coded terminal messages to improve readability.
 The application uses:
 
 - Green for successful calculations and command results
+
 - Red for errors and invalid commands
+
 - Cyan for welcome messages, help, and history information
 
 This improves the interactive user experience.
@@ -380,7 +515,9 @@ When `CALCULATOR_AUTO_SAVE=true`, the calculator automatically saves completed c
 For example:
 
 ```text
+
 history/calculation_history.csv
+
 ```
 
 ### Manual Saving and Loading
@@ -390,7 +527,9 @@ The `save` command creates a separate history backup.
 For example:
 
 ```text
+
 history/manual_history.csv
+
 ```
 
 The `load` command restores calculations from the manual backup. CSV data is validated for required columns, valid operations, finite numeric values, matching results, and valid timestamps before the current history is changed.
@@ -414,7 +553,9 @@ Log messages are written to a configured file.
 For example:
 
 ```text
+
 logs/calculator.log
+
 ```
 
 Three logging levels are supported:
@@ -428,10 +569,15 @@ Three logging levels are supported:
 ### Example Log Entries
 
 ```text
+
 INFO - add: 10.0, 5.0 = 15.0
+
 ERROR - divide: Cannot divide by zero.
+
 WARNING - Invalid number of operands: add 10
+
 WARNING - Unknown command: unknown
+
 ```
 
 Log entries also include timestamps.
@@ -447,24 +593,35 @@ The calculator validates arithmetic inputs before executing calculations.
 Validation includes:
 
 - Checking numeric input types
+
 - Rejecting Boolean values as numeric operands
+
 - Rejecting non-finite values such as NaN and infinity
+
 - Enforcing configured input magnitude limits
+
 - Handling invalid arithmetic operations
 
 The application defines custom exceptions:
 
 - `CalculatorError`: Base calculator exception
+
 - `ValidationError`: Invalid calculator input
+
 - `OperationError`: Calculator operation errors
 
 The REPL also handles recoverable errors such as:
 
 - Invalid numeric input
+
 - Division by zero
+
 - Missing operands
+
 - Missing CSV history files
+
 - Invalid CSV history formats
+
 - Unknown calculator commands
 
 Errors are displayed to users without terminating the interactive calculator session.
@@ -478,35 +635,53 @@ The project uses pytest for automated unit testing and pytest-cov for code cover
 Tests cover:
 
 - Arithmetic operations
+
 - Calculation execution
+
 - Input validation and custom exceptions
+
 - History management
+
 - Undo and redo
+
 - Configuration
+
 - Observer behavior
+
 - Command registration
+
 - Dynamic help generation
+
 - Command execution
+
 - REPL functionality
+
 - Logging and error handling
+
 - CSV format validation and safe history loading
 
 ### Run All Tests
 
 ```bash
+
 python -m pytest -q
+
 ```
 
 ### Generate a Coverage Report
 
 ```bash
+
 python -m pytest --cov=app --cov-report=term-missing
+
 ```
 
 ### Enforce Minimum 90% Coverage
 
 ```bash
+
 python -m pytest --cov=app --cov-report=term-missing --cov-fail-under=90
+
 ```
 
 ### Latest Verified Test Results
@@ -515,10 +690,10 @@ python -m pytest --cov=app --cov-report=term-missing --cov-fail-under=90
 
 | Metric | Result |
 |---|---|
-Total tests | 201
-Passed | 201
+| Total tests | 220 |
+| Passed | 220 |
 | Failed | 0 |
-| Total code coverage | 100% |
+| Total code coverage | 99.53% |
 | Required coverage | 90% |
 | Coverage requirement | Passed |
 
@@ -539,7 +714,7 @@ Passed | 201
 | `observers.py` | 100% |
 | `operations.py` | 100% |
 | `repl.py` | 100% |
-| **Overall** | **100%** |
+| **Overall** | **99.53%** |
 
 ## Continuous Integration with GitHub Actions
 
@@ -548,18 +723,22 @@ The project uses GitHub Actions for automated testing.
 The workflow is located at:
 
 ```text
+
 .github/workflows/python-app.yml
+
 ```
 
 The workflow is configured to run when:
 
 - Changes are pushed to `main`
+
 - Pull requests target `main`
+
 - The workflow is manually triggered
 
-The workflow uses Python 3.11, installs project dependencies, runs pytest, and enforces the minimum 90% coverage requirement.
+The workflow installs project dependencies, runs pytest, and enforces the minimum 90% coverage requirement.
 
-The workflow for commit `80c1181` completed successfully on GitHub Actions (Python 3.11). GitHub Actions helps verify that changes do not break existing functionality.
+The workflow for commit `16d88d0` completed successfully on GitHub Actions. GitHub Actions helps verify that changes do not break existing functionality.
 
 ## Git Version Control
 
@@ -580,9 +759,11 @@ The Enhanced Calculator Command-Line Application implements arithmetic operation
 All three optional enhancements have been implemented:
 
 1. Command Design Pattern
+
 2. Decorator-based dynamic help
+
 3. Colorama terminal output
 
-The latest verified local test run completed with **201 passing tests and 100% statement coverage**, exceeding the project's minimum 90% coverage requirement.
+The latest verified local test run completed with **220 passing tests and 99.53% statement coverage**, exceeding the project's minimum 90% coverage requirement.
 
 Developed for the NJIT IS601 Midterm Project.
